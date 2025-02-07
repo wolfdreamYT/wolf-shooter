@@ -103,12 +103,12 @@
         <button class="shop-button-close" onclick="closeShop()">Close</button>
     </div>
 
-    <img class="gun" src="/assets/textures/gun1.png">
-    <audio id="shop-click-sound" src="/assets/sounds/click.mp3"></audio>
-    <audio id="purchase-success-sound" src="/assets/sounds/success.mp3"></audio>
-    <audio id="error-sound" src="/assets/sounds/error.mp3"></audio>
-    <audio id="cocking-sound" src="/assets/sounds/gun-cocking.mp3"></audio>
-    <audio id="gunshot-sound" src="/assets/sounds/gunshot.mp3"></audio>
+    <img class="gun" src="gun1.png">
+    <audio id="shop-click-sound" src="click.mp3"></audio>
+    <audio id="purchase-success-sound" src="success.mp3"></audio>
+    <audio id="error-sound" src="error.mp3"></audio>
+    <audio id="cocking-sound" src="gun-cocking.mp3"></audio>
+    <audio id="gunshot-sound" src="gunshot.mp3"></audio>
     <script>
         let isShopOpen = false; 
 
@@ -239,12 +239,12 @@
             document.body.appendChild(renderer.domElement);
             document.body.addEventListener('click', () => document.body.requestPointerLock());
 
-            const floorTexture = new THREE.TextureLoader().load('/assets/textures/floor.jpg');
+            const floorTexture = new THREE.TextureLoader().load('floor.jpg');
             const floor = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshBasicMaterial({ map: floorTexture }));
             floor.rotation.x = -Math.PI / 2;
             scene.add(floor);
             
-            const wallTexture = new THREE.TextureLoader().load('/assets/textures/wall.jpg');
+            const wallTexture = new THREE.TextureLoader().load('wall.jpg');
             for (let i = 0; i < 4; i++) {
                 const wall = new THREE.Mesh(new THREE.BoxGeometry(50, 10, 1), new THREE.MeshBasicMaterial({ map: wallTexture }));
                 if (i % 2 === 0) {
@@ -256,10 +256,10 @@
             }
 
             const textures = [
-                new THREE.TextureLoader().load('/assets/textures/obstacle.jpg'),
-                new THREE.TextureLoader().load('/assets/textures/obstacle1.jpg'),
-                new THREE.TextureLoader().load('/assets/textures/obstacle2.jpg'),
-                new THREE.TextureLoader().load('/assets/textures/obstacle3.jpg')
+                new THREE.TextureLoader().load('obstacle.jpg'),
+                new THREE.TextureLoader().load('obstacle1.jpg'),
+                new THREE.TextureLoader().load('obstacle2.jpg'),
+                new THREE.TextureLoader().load('obstacle3.jpg')
             ];
 
             for (let i = 0; i < 150; i++) {
@@ -275,7 +275,7 @@
                 obstacles.push(box);
             }
             
-            const enemyTexture = new THREE.TextureLoader().load('/assets/textures/enemy.jpg');
+            const enemyTexture = new THREE.TextureLoader().load('enemy.jpg');
 
             let enemy1 = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 1), new THREE.MeshBasicMaterial({ map: enemyTexture }));
             enemy1.position.set(10, 1, 10);
@@ -362,7 +362,7 @@
         }
 
         function spawnEnemy() {
-            const enemyTexture = new THREE.TextureLoader().load('/assets/textures/enemy.jpg');
+            const enemyTexture = new THREE.TextureLoader().load('enemy.jpg');
             let newEnemy = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 1), new THREE.MeshBasicMaterial({ map: enemyTexture }));
             newEnemy.position.set(Math.random() * 20 - 10, 1, Math.random() * 20 - 10);
             scene.add(newEnemy);
