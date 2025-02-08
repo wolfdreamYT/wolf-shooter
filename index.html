@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wolf Shooter - Beta 2.0</title>
-    <link rel="icon" href="favicon.ico?v=1" type="image/x-icon">
+    <link rel="icon" href="assets/textures/favicon.ico?v=1" type="image/x-icon">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"></script>
     <style>
@@ -16,7 +16,6 @@
             left: 50%;
             width: 10px;
             height: 10px;
-            background: red;
             border-radius: 50%;
             transform: translate(-50%, -50%);
         }
@@ -38,14 +37,14 @@
         }
         .gun {
             position: absolute;
-            left: 60.5%;
-            bottom: 120px;
+            left: 41%;
+            bottom: -150px;
             transform: translateX(-50%);
             width: 40vw;
             height: auto; 
             max-width: 1000px;
             max-height: 1000px; 
-            scale: 160%;
+            scale: 60%;
         }
         .shop-button {
             width: 200px;
@@ -139,6 +138,13 @@
         Score: 0
     </div>
 
+    <div id="magazine-display" style="
+        position: absolute; top: 110px; left: 20px; 
+        font-size: 20px; color: white; background: rgba(0, 0, 0, 0.5);
+        padding: 5px; border-radius: 5px;">
+        Mag: 7 / 7
+    </div>
+
     <div id="shop-menu" style="
         position: absolute; top: 50%; left: 50%;
         transform: translate(-50%, -50%);
@@ -208,6 +214,9 @@
     </div>
 
     <img class="gun" src="gun1.png">
+    <audio id="jump-sound" src="jumping.mp3"></audio>
+    <audio id="walking-sound" src="walk.mp3" loop></audio>
+    <audio id="reload-sound" src="reload.mp3"></audio>
     <audio id="shop-click-sound" src="click.mp3"></audio>
     <audio id="purchase-success-sound" src="success.mp3"></audio>
     <audio id="error-sound" src="error.mp3"></audio>
@@ -493,6 +502,18 @@
         let ammo = 5;
         let enemyAlive = enemies.length > 0;
         let score = 0;
+        let magazineSize = 7; 
+        let bulletsInMag = 7;  
+        let isReloading = false;
+
+        let walkingSound = document.getElementById("walking-sound");
+        let jumpSound = document.getElementById("jump-sound");
+        let isMoving = false;
+        let isJumping = false;
+        let playerBulletSpeed = 1.0; 
+        let enemyBulletSpeed = 1.0; 
+
+
         const obstacles = [];
         const lookSpeed = 0.002;
 
@@ -508,6 +529,11 @@
         function updateScoreDisplay() {
             document.getElementById('score-display').innerText = "Score: " + score;
         }
+        document.addEventListener("keydown", function(event) {
+            if (event.key === "r" || event.key === "R") {
+                startReload();
+            }
+        });
 
         function init() {
             scene = new THREE.Scene();
@@ -591,6 +617,19 @@
                 isSprinting = true;
                 sprintTime = 0; 
             }
+            if (!isMoving) {
+                walkingSound.play();
+                isMoving = true;
+            }
+
+            if (event.key === ' ') {
+                controls.jump = true;
+                if (!isJumping) {
+                    jumpSound.currentTime = 0;
+                    jumpSound.play();
+                    isJumping = true;
+                }
+            }
         }
 
         function onKeyUp(event) {
@@ -603,6 +642,12 @@
             if (event.key === 'a') controls.right = false;
             if (event.key === ' ') controls.jump = false;
             if (event.key === 'Shift') controls.sneak = false; 
+
+            if (!controls.w && !controls.s && !controls.a && !controls.d) {
+                walkingSound.pause();
+                walkingSound.currentTime = 0;
+                isMoving = false;
+            }
         }
 
 
@@ -620,25 +665,47 @@
         }
 
         function shoot() {
-            if (ammo > 0) { 
+            if (isReloading) return;
+
+            if (ammo > 0 && bulletsInMag > 0) {
                 const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
                 bullet.position.copy(camera.position);
-                bullet.velocity = new THREE.Vector3().copy(camera.getWorldDirection(new THREE.Vector3())).multiplyScalar(0.5);
+                bullet.velocity = new THREE.Vector3().copy(camera.getWorldDirection(new THREE.Vector3())).multiplyScalar(playerBulletSpeed);
                 bullets.push(bullet);
                 scene.add(bullet);
-                ammo--; 
+
+                ammo--;
+                bulletsInMag--;
                 updateAmmoDisplay();
+                updateMagazineDisplay();
 
-                const gunshotSound = document.getElementById('gunshot-sound');
-                gunshotSound.currentTime = 0; 
+                let gunshotSound = document.getElementById('gunshot-sound');
+                gunshotSound.currentTime = 0;
                 gunshotSound.play();
-            } else {
-                console.log("Out of ammo! Kill an enemy to reload.");
 
-                const cockingSound = document.getElementById('cocking-sound');
-                cockingSound.currentTime = 0; 
-                cockingSound.play();
+                if (bulletsInMag <= 0) {
+                    startReload();
+                }
+            } else {
+                playSound("cocking-sound");
             }
+        }
+
+        function startReload() {
+            isReloading = true;
+            console.log("Reloading... Please wait 5 seconds.");
+            playSound("reload-sound"); 
+
+            setTimeout(() => {
+                isReloading = false;
+                bulletsInMag = Math.min(magazineSize, ammo); 
+                updateMagazineDisplay();
+                console.log("Reload complete!");
+            }, 5000);
+        }
+
+        function updateMagazineDisplay() {
+            document.getElementById('magazine-display').innerText = `Mag: ${bulletsInMag} / ${magazineSize}`;
         }
 
         function spawnEnemy() {
@@ -650,7 +717,7 @@
         }
 
         function enemyShoot() {
-            enemies.forEach((enemy, index) => {
+            enemies.forEach((enemy) => {
                 if (Date.now() - lastShot > enemyCooldown) {
                     const enemyBullet = new THREE.Mesh(
                         new THREE.SphereGeometry(0.1, 8, 8),
@@ -660,14 +727,13 @@
                     enemyBullet.position.copy(enemy.position);
 
                     let directionToPlayer = new THREE.Vector3().subVectors(camera.position, enemy.position).normalize();
-
-                    enemyBullet.velocity = directionToPlayer.multiplyScalar(0.2);
+                    enemyBullet.velocity = directionToPlayer.multiplyScalar(enemyBulletSpeed);
 
                     enemyBullets.push(enemyBullet);
                     scene.add(enemyBullet);
 
                     enemyBullet.alive = true;
-                    setTimeout(() => { enemyBullet.alive = false; }, 3000); 
+                    setTimeout(() => { enemyBullet.alive = false; }, 3000);
 
                     lastShot = Date.now();
                 }
@@ -706,6 +772,11 @@
             direction.y = 0;
             direction.normalize();
 
+            if (controls.jump && isGrounded) {
+                velocity.y = 0.2;
+                isJumping = true; 
+            }
+
 
             const nextPosition = camera.position.clone();
             if (controls.forward) nextPosition.add(direction.clone().multiplyScalar(moveSpeed));
@@ -720,8 +791,15 @@
             if (controls.jump && isGrounded) velocity.y = 0.2;
             velocity.y += gravity;
             camera.position.y += velocity.y;
-            if (camera.position.y <= 2) { camera.position.y = 2; isGrounded = true; velocity.y = 0; }
-            else { isGrounded = false; }
+            if (camera.position.y <= 2) { 
+                camera.position.y = 2; 
+                isGrounded = true; 
+                velocity.y = 0; 
+                isJumping = false;
+            }
+            else { 
+                isGrounded = false;
+            }
 
             bullets.forEach((bullet, index) => {
             bullet.position.add(bullet.velocity);
@@ -757,7 +835,6 @@
                 updateHealthBar();
                 
                 if (playerHealth <= 0) {
-                    alert("You died! Try again!");
                     location.reload();
                 }
             }
@@ -765,7 +842,6 @@
                 enemyBullets.splice(index, 1);
                 
                 if (playerHealth <= 0) {
-                    alert("You died! Try again!")
                     location.reload();
                     camera.position.copy(spawnPoint);
                     playerHealth = 100;
