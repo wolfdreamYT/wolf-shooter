@@ -7,7 +7,7 @@ This is a FPS game i created for our 100 subscriber anniversary! Please feel fre
 
 # README
 
-Hello everyone, please feel free to play the game i created. This game has multiple features, ones that are used in real games as well. And please, if your new, subscribe to our youtube channel as this can help us grow and be more active in the developement community!
+Hello everyone, please feel free to play the game i created. This game has multiple features, ones that are used in real games as well. And please, if your new, subscribe to our youtube channel as this can help us grow and be more active in the developement community! This is a realistic game where, unlike Call Of Duty or PUBG, you dont need to take 20 bullets until you die, 2 hits and your dead. This will be our biggest project ever, so please support us while we work on improving your expearience!
 
 # Features:
 
@@ -26,7 +26,7 @@ Hello everyone, please feel free to play the game i created. This game has multi
 
 # How To Use:
 
-  To start, please visit [link unavailable]
+  To start, please visit `wolfdreamyt.github.io/wolf-shooter`
 
   Now, to walk/move, you can use WASD:
     - W to walk forward
@@ -41,3 +41,13 @@ Hello everyone, please feel free to play the game i created. This game has multi
 Sprinting only lasts for 10 seconds, and once the player is tired, they will stop sprinting and walk normally, until sprint has come back. This will be used as a quick escape method if the AIs are too strong at the moment, though not used for long distance running.
 
 Now, to open shop, press B and a UI should appear. This UI will have 2 buttons: Ammo and health. You can click one or the other to get more of that item. Please remember that when you click a button, you might need to press ESCAPE to unlock the mouse as the mouse locking system on java is a bit weird. Remember to kill AIs for their ammo and points. Each kill earns 100 points, and each kill gives you your ammo back, so 1 bullet every kill you obtain.
+
+Now, to open the BattlePass, you must click P on your keyboard. This will open a nice BattlePass UI with your level, and progress to the next level. Each level gives better rewards, and comes with both ammo and points for purchasing items in shop and killing more enemies. The BattlePass contains 10 predefined levels with rewards getting better as you go on, and after reaching level 10, your level stops increasing and every 1000 points (10 kills) after will give you 10 more ammo.
+
+Thankyou for supporting this project, and this is going to get better as we progress. Please, if you havent laready, give us a good star rating. If you do not like or have not been satisfied from our work, please let us know as this can help us improve the game better.
+
+# Contact:
+
+Email: `wolfdream226@gmail.com`
+Discord: `discord.wolfymc.com`
+Youtube: `youtube.com/@wolfdream226`
