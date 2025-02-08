@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wolf Shooter - Beta 1.0</title>
+    <title>Wolf Shooter - Beta 2.0</title>
     <link rel="icon" href="/favicon.ico?v=1" type="image/x-icon">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"></script>
@@ -31,6 +31,7 @@
         }
         #health-fill {
             width: 100%;
+            max-width: 200px;
             height: 100%;
             background: linear-gradient(90deg, green, yellow, red);
             transition: width 0.5s;
@@ -64,6 +65,59 @@
             border-radius: 8px;
             border-width: 1px;
         }
+        .menu-ui {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            width: 300px;
+            z-index: 10;
+            display: none; 
+        }
+
+        .menu-button {
+            width: 200px;
+            height: 50px;
+            background-color: rgb(92, 143, 231);
+            border: solid 1px rgb(11, 22, 120);
+            border-radius: 8px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .menu-button1 {
+            width: 200px;
+            height: 50px;
+            background-color: rgb(92, 143, 231);
+            border: solid 1px rgb(11, 22, 120);
+            border-radius: 8px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .menu-button2 {
+            width: 200px;
+            height: 50px;
+            background-color: rgb(92, 143, 231);
+            border: solid 1px rgb(11, 22, 120);
+            border-radius: 8px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .menu-button:hover {
+            background-color: rgb(50, 100, 200);
+        }
+
     </style>
 </head>
 <body>
@@ -76,7 +130,7 @@
         position: absolute; top: 50px; left: 20px; 
         font-size: 20px; color: white; background: rgba(0, 0, 0, 0.5);
         padding: 5px; border-radius: 5px;">
-        Ammo: 5
+        Ammo: 3
     </div>
     <div id="score-display" style="
         position: absolute; top: 80px; left: 20px; 
@@ -95,7 +149,7 @@
         display: none;
         width: 300px;
         text-align: center;
-        z-index: 9999; /* Ensures it's on top */
+        z-index: 20; /* Ensures it's on top */
     ">
         <h2>Shop</h2>
         <button class="shop-button" onclick="buyItem('ammo')">Ammo (+5) - 100 Points</button><br><br>
@@ -103,29 +157,253 @@
         <button class="shop-button-close" onclick="closeShop()">Close</button>
     </div>
 
-    <img class="gun" src="gun1.png">
-    <audio id="shop-click-sound" src="click.mp3"></audio>
-    <audio id="purchase-success-sound" src="success.mp3"></audio>
-    <audio id="error-sound" src="error.mp3"></audio>
-    <audio id="cocking-sound" src="gun-cocking.mp3"></audio>
-    <audio id="gunshot-sound" src="gunshot.mp3"></audio>
+    <button id="login-button" style="
+        position: absolute; top: 10px; right: 10px;
+        background: #444; color: white; padding: 10px 15px;
+        border: none; border-radius: 5px; cursor: pointer;">
+        Login
+    </button>
+
+    <div id="battlepass-ui" style="
+        position: absolute; top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.9);
+        padding: 20px;
+        border-radius: 10px;
+        color: white;
+        display: none;
+        width: 300px;
+        text-align: center;
+        z-index: 9999;">
+        <h2>Battle Pass</h2>
+        <p>Level: <span id="bp-level">1</span></p>
+        <p>Progress: <span id="bp-progress">0</span> / 1000</p>
+        <div style="width: 100%; height: 20px; background: gray; border-radius: 5px; overflow: hidden;">
+            <div id="bp-progress-bar" style="width: 0%; height: 100%; background: gold;"></div>
+        </div>
+        <button onclick="closeBattlePass()" style="
+            margin-top: 10px;
+            background: red; color: white; padding: 5px 10px;
+            border: none; border-radius: 5px; cursor: pointer;">
+            Close
+        </button>
+    </div>
+
+    <div id="startup-menu" style="
+        position: absolute; 
+        top: 50%; 
+        left: 50%; 
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.8); 
+        padding: 20px; 
+        border-radius: 10px; 
+        color: white; 
+        text-align: center; 
+        width: 300px;
+        z-index: 9999;">
+        <h2>Welcome to Wolf Shooter</h2>
+        <button class="menu-button" onclick="startGame()">Play</button><br><br>
+        <button class="menu-button1" onclick="toggleShop()">Shop</button>
+        <button class="menu-button2" onclick="toggleBattlePass()">Battle Pass</button>
+    </div>
+
+    <img class="gun" src="/assets/textures/gun1.png">
+    <audio id="shop-click-sound" src="/assets/sounds/click.mp3"></audio>
+    <audio id="purchase-success-sound" src="/assets/sounds/success.mp3"></audio>
+    <audio id="error-sound" src="/assets/sounds/error.mp3"></audio>
+    <audio id="cocking-sound" src="/assets/sounds/gun-cocking.mp3"></audio>
+    <audio id="gunshot-sound" src="/assets/sounds/gunshot.mp3"></audio>
+    <script>
+        function startGame() {
+            document.getElementById("startup-menu").style.display = "none";
+            lockCursor();
+        }
+    </script>
+    <script>
+        function hideAllUI() {
+            document.getElementById("startup-menu").style.display = "none";
+            document.getElementById("shop-menu").style.display = "none";
+            document.getElementById("battlepass-ui").style.display = "none";
+        }
+
+        function toggleShop() {
+            let shopMenu = document.getElementById('shop-menu');
+
+            if (shopMenu.style.display === "block") {
+                shopMenu.style.display = "none";
+                lockCursor();
+                enableControls();
+            } else {
+                hideAllUI(); 
+                shopMenu.style.display = "block";
+                unlockCursor();
+                disableControls();
+            }
+        }
+
+        function toggleBattlePass() {
+            let battlePassMenu = document.getElementById('battlepass-ui');
+
+            if (battlePassMenu.style.display === "block") {
+                battlePassMenu.style.display = "none";
+                lockCursor();
+                enableControls();
+            } else {
+                hideAllUI(); 
+                battlePassMenu.style.display = "block";
+                unlockCursor();
+                disableControls();
+            }
+        }
+
+        function startGame() {
+            hideAllUI();
+            lockCursor();
+        }
+    </script>
+
+    <script>
+        let battlePassOpen = false;
+        let bpLevel = 1;
+        let bpProgress = 0;
+        const bpRequiredPoints = 1000; 
+        const bpRewards = {
+            1: { ammo: 0, score: 0 },
+            2: { ammo: 25, score: 100 },
+            3: { ammo: 50, score: 0 },
+            4: { ammo: 25, score: 250 },
+            5: { ammo: 65, score: 0 },
+            6: { ammo: 25, score: 400 },
+            7: { ammo: 80, score: 0 },
+            8: { ammo: 25, score: 650 },
+            9: { ammo: 100, score: 0 },
+            10: { ammo: 25, score: 800 },
+        };
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === "p" || event.key === "P") {
+                toggleBattlePass();
+            }
+        });
+
+        function toggleBattlePass() {
+            let battlePassMenu = document.getElementById('battlepass-ui');
+
+            if (battlePassMenu.style.display === "block") {
+                battlePassMenu.style.display = "none";
+                lockCursor();
+                enableControls();
+            } else {
+                hideAllUI(); 
+                battlePassMenu.style.display = "block";
+                unlockCursor();
+                disableControls();
+            }
+        }
+
+        function closeBattlePass() {
+            document.getElementById('battlepass-ui').style.display = "none";
+            lockCursor();
+            battlePassOpen = false;
+            enableControls();
+        }
+
+        function addBattlePassProgress(pointsEarned) {
+            bpProgress += pointsEarned;
+
+            updateBattlePassUI();
+
+            while (bpProgress >= bpRequiredPoints) {
+                if (bpLevel < 10) {
+                    levelUpBattlePass();
+                } else {
+                    bpProgress -= bpRequiredPoints;
+                    ammo += 10;
+                    playSound("purchase-success-sound");
+                    updateAmmoDisplay();
+                    console.log(`🎉 Max Level! Received +10 Ammo`);
+                }
+                updateBattlePassUI();
+            }
+        }
+
+        function levelUpBattlePass() {
+            if (bpLevel < 10) {
+                bpProgress -= bpRequiredPoints;
+                bpLevel++;
+
+                let reward = bpRewards[bpLevel];
+                ammo += reward.ammo;
+                score += reward.score;
+                playSound("purchase-success-sound");
+
+                updateAmmoDisplay();
+                updateScoreDisplay();
+                console.log(`🎉 Leveled up to ${bpLevel}! Rewards: Ammo +${reward.ammo}, Score +${reward.score}`);
+            }
+        }
+
+        function updateBattlePassUI() {
+            document.getElementById('bp-level').innerText = bpLevel;
+            document.getElementById('bp-progress').innerText = bpProgress;
+            
+            let progressPercentage = (bpProgress / bpRequiredPoints) * 100;
+            document.getElementById('bp-progress-bar').style.width = progressPercentage + "%";
+        }
+    </script>
+    <script>
+        let isAdmin = false;
+        let isFlying = false;
+
+        document.getElementById("login-button").addEventListener("click", function () {
+            let password = prompt("Enter Admin Password, Hint: its only numbers, think about captain amarica 2");
+            if (password === "8539") { 
+                isAdmin = true;
+                alert("Admin Access Granted!");
+                ammo = 9999999999999;
+                score = 9999999999999;
+                updateAmmoDisplay();
+            } else {
+                alert("Incorrect Password!");
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (isAdmin && event.key === "f") {
+                isFlying = !isFlying;
+                if (isFlying) {
+                    velocity.y = 0;
+                }
+            }
+        });
+
+        function applyFlightMode() {
+            if (isAdmin && isFlying) {
+                velocity.y = 0;
+
+                if (controls.jump) camera.position.y += 0.2; 
+                if (controls.backward) camera.position.y -= 0.2; 
+                if (controls.sneak) camera.position.y -= 0.2; 
+            } else {
+                velocity.y += gravity; 
+            }
+        }
+    </script>
     <script>
         let isShopOpen = false; 
 
         function toggleShop() {
             let shopMenu = document.getElementById('shop-menu');
 
-            if (!isShopOpen) {
-                shopMenu.style.display = "block";
-                unlockCursor();
-                isShopOpen = true;
-                disableControls();
-            } else {
-                playSound("shop-click-sound");
+            if (shopMenu.style.display === "block") {
                 shopMenu.style.display = "none";
                 lockCursor();
-                isShopOpen = false;
                 enableControls();
+            } else {
+                hideAllUI(); 
+                shopMenu.style.display = "block";
+                unlockCursor();
+                disableControls();
             }
         }
 
@@ -195,11 +473,11 @@
         let controls = { forward: false, backward: false, left: false, right: false, jump: false };
         let bullets = [];
         let velocity = new THREE.Vector3();
-        let gravity = -0.01;
+        let gravity = -0.005;
         let isGrounded = false;
 
-        let walkSpeed = 0.10; 
-        let sprintSpeed = 0.20; 
+        let walkSpeed = 0.20; 
+        let sprintSpeed = 0.30; 
         let isSprinting = false;
         let sprintTime = 0; 
         let sprintCooldown = false;
@@ -208,7 +486,7 @@
         let enemyBullets = [];
         let enemyCooldown = 3000, lastShot = 0;
         let spawnPoint = new THREE.Vector3(0, 2, 0);
-        let playerHealth = 500;
+        let playerHealth = 100;
         let enemySpeed = 0.05; 
         let detectionRange = 200; 
         let stopRange = 2;
@@ -239,12 +517,12 @@
             document.body.appendChild(renderer.domElement);
             document.body.addEventListener('click', () => document.body.requestPointerLock());
 
-            const floorTexture = new THREE.TextureLoader().load('floor.jpg');
+            const floorTexture = new THREE.TextureLoader().load('/assets/textures/floor.jpg');
             const floor = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshBasicMaterial({ map: floorTexture }));
             floor.rotation.x = -Math.PI / 2;
             scene.add(floor);
             
-            const wallTexture = new THREE.TextureLoader().load('wall.jpg');
+            const wallTexture = new THREE.TextureLoader().load('/assets/textures/wall.jpg');
             for (let i = 0; i < 4; i++) {
                 const wall = new THREE.Mesh(new THREE.BoxGeometry(50, 10, 1), new THREE.MeshBasicMaterial({ map: wallTexture }));
                 if (i % 2 === 0) {
@@ -256,10 +534,10 @@
             }
 
             const textures = [
-                new THREE.TextureLoader().load('obstacle.jpg'),
-                new THREE.TextureLoader().load('obstacle1.jpg'),
-                new THREE.TextureLoader().load('obstacle2.jpg'),
-                new THREE.TextureLoader().load('obstacle3.jpg')
+                new THREE.TextureLoader().load('/assets/textures/obstacle.jpg'),
+                new THREE.TextureLoader().load('/assets/textures/obstacle1.jpg'),
+                new THREE.TextureLoader().load('/assets/textures/obstacle2.jpg'),
+                new THREE.TextureLoader().load('/assets/textures/obstacle3.jpg')
             ];
 
             for (let i = 0; i < 150; i++) {
@@ -275,7 +553,7 @@
                 obstacles.push(box);
             }
             
-            const enemyTexture = new THREE.TextureLoader().load('enemy.jpg');
+            const enemyTexture = new THREE.TextureLoader().load('/assets/textures/enemy.jpg');
 
             let enemy1 = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 1), new THREE.MeshBasicMaterial({ map: enemyTexture }));
             enemy1.position.set(10, 1, 10);
@@ -307,6 +585,7 @@
             if (event.key === 'd') controls.left = true;
             if (event.key === 'a') controls.right = true;
             if (event.key === ' ') controls.jump = true;
+            if (event.key === 'Shift') controls.sneak = true;
 
             if (event.key === 'w' && event.ctrlKey && !sprintCooldown) {
                 isSprinting = true;
@@ -323,6 +602,7 @@
             if (event.key === 'd') controls.left = false;
             if (event.key === 'a') controls.right = false;
             if (event.key === ' ') controls.jump = false;
+            if (event.key === 'Shift') controls.sneak = false; 
         }
 
 
@@ -362,7 +642,7 @@
         }
 
         function spawnEnemy() {
-            const enemyTexture = new THREE.TextureLoader().load('enemy.jpg');
+            const enemyTexture = new THREE.TextureLoader().load('/assets/textures/enemy.jpg');
             let newEnemy = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 1), new THREE.MeshBasicMaterial({ map: enemyTexture }));
             newEnemy.position.set(Math.random() * 20 - 10, 1, Math.random() * 20 - 10);
             scene.add(newEnemy);
@@ -404,6 +684,7 @@
 
         function animate() {
             requestAnimationFrame(animate);
+            applyFlightMode(); 
 
             let moveSpeed = isSprinting ? sprintSpeed : walkSpeed;
 
@@ -443,30 +724,43 @@
             else { isGrounded = false; }
 
             bullets.forEach((bullet, index) => {
-                bullet.position.add(bullet.velocity);
-                
-                enemies.forEach((enemy, enemyIndex) => {
-                    if (bullet.position.distanceTo(enemy.position) < 1) {
-                        scene.remove(enemy);
-                        enemies.splice(enemyIndex, 1);
-                        scene.remove(bullet);
-                        bullets.splice(index, 1);
-                        ammo++;
-                        score += 100;
-                        playerHealth += 50;
-                        updateAmmoDisplay();
-                        updateScoreDisplay();
-                        setTimeout(spawnEnemy, 5000);
-                    }
-                });
+            bullet.position.add(bullet.velocity);
+
+            enemies.forEach((enemy, enemyIndex) => {
+                if (bullet.position.distanceTo(enemy.position) < 1) {
+                    scene.remove(enemy);
+                    enemies.splice(enemyIndex, 1);
+                    scene.remove(bullet);
+                    bullets.splice(index, 1);
+
+                    let scoreEarned = 100;
+                    ammo += 1;
+                    score += scoreEarned;
+
+                    addBattlePassProgress(scoreEarned);
+
+                    updateScoreDisplay();
+
+                    console.log(`Enemy killed! +${scoreEarned} Score`);
+                    console.log(`Battle Pass Progress: ${bpProgress}/${bpRequiredPoints}`);
+
+                    setTimeout(spawnEnemy, 5000);
+                }
             });
+        });
 
             enemyBullets.forEach((bullet, index) => {
                 bullet.position.add(bullet.velocity);
-
-        if (bullet.position.distanceTo(camera.position) < 1.5) { 
+                if (bullet.position.distanceTo(camera.position) < 1.5) { 
+            if (!isAdmin) { 
                 playerHealth -= 75; 
                 updateHealthBar();
+                
+                if (playerHealth <= 0) {
+                    alert("You died! Try again!");
+                    location.reload();
+                }
+            }
                 scene.remove(bullet);
                 enemyBullets.splice(index, 1);
                 
