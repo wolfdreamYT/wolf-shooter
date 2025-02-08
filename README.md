@@ -20,6 +20,9 @@ Hello everyone, please feel free to play the game i created. This game has multi
   - AI enemies shoot at you
   - Fully functioning damage/health system
   - walking/sprinting system
+  - Fully functioning BattlePass system
+  - Fully fuctioning Admin system/with flying perms
+  - Fully functioning startup menu/with options
 
 # How To Use:
 
