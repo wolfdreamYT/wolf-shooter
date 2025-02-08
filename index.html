@@ -495,15 +495,15 @@
         let enemyBullets = [];
         let enemyCooldown = 3000, lastShot = 0;
         let spawnPoint = new THREE.Vector3(0, 2, 0);
-        let playerHealth = 100;
+        let playerHealth = 200;
         let enemySpeed = 0.05; 
         let detectionRange = 200; 
         let stopRange = 2;
-        let ammo = 5;
+        let ammo = 15;
         let enemyAlive = enemies.length > 0;
         let score = 0;
-        let magazineSize = 7; 
-        let bulletsInMag = 7;  
+        let magazineSize = 15; 
+        let bulletsInMag = 15;  
         let isReloading = false;
 
         let walkingSound = document.getElementById("walking-sound");
@@ -511,7 +511,7 @@
         let isMoving = false;
         let isJumping = false;
         let playerBulletSpeed = 1.0; 
-        let enemyBulletSpeed = 1.0; 
+        let enemyBulletSpeed = 0.5; 
 
 
         const obstacles = [];
