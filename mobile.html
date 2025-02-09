@@ -290,7 +290,7 @@
 
         let joystick = document.getElementById("joystick");
         let joystickContainer = document.getElementById("joystick-container");
-        let touchControls = { forward: false, backward: false, left: false, right: false };
+        let touchControls = { forward: false, backward: false, left: false, right: false, jump: false };
 
         joystickContainer.addEventListener("touchstart", (event) => {
             let startX = event.touches[0].clientX;
@@ -302,15 +302,16 @@
 
                 joystick.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
 
-                touchControls.forward = deltaY < -30;
-                touchControls.backward = deltaY > 30;
-                touchControls.left = deltaX < -30;
-                touchControls.right = deltaX > 30;
+                let threshold = 20; 
+                touchControls.forward = deltaY < -threshold;
+                touchControls.backward = deltaY > threshold;
+                touchControls.left = deltaX < -threshold;
+                touchControls.right = deltaX > threshold;
             }
 
             function endJoystick() {
                 joystick.style.transform = `translate(-50%, -50%)`;
-                touchControls = { forward: false, backward: false, left: false, right: false };
+                touchControls = { forward: false, backward: false, left: false, right: false, jump: false };
                 document.removeEventListener("touchmove", moveJoystick);
                 document.removeEventListener("touchend", endJoystick);
             }
@@ -319,13 +320,18 @@
             document.addEventListener("touchend", endJoystick);
         });
 
+
         document.getElementById("btn-shoot").addEventListener("touchstart", () => {
             shoot(); 
         });
 
         document.getElementById("btn-jump").addEventListener("touchstart", () => {
-            touchControls.jump = true;
-            setTimeout(() => touchControls.jump = false, 200);
+            if (!touchControls.jump) {
+                touchControls.jump = true;
+                setTimeout(() => {
+                    touchControls.jump = false;
+                }, 300); 
+            }
         });
 
         let lastTouchX, lastTouchY;
@@ -355,6 +361,7 @@
 
         function updateMobileMovement() {
             let moveSpeed = 0.2; 
+            let jumpSpeed = 0.5; 
 
             let direction = new THREE.Vector3();
             camera.getWorldDirection(direction);
@@ -366,14 +373,21 @@
             if (touchControls.left) camera.position.add(new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), direction).multiplyScalar(-moveSpeed));
             if (touchControls.right) camera.position.add(new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), direction).multiplyScalar(moveSpeed));
 
-            if (touchControls.jump) camera.position.y += 0.3;
+            if (touchControls.jump && camera.position.y <= 2.5) {
+                camera.position.y += jumpSpeed; 
+            }
+
+            if (camera.position.y > 2) {
+                camera.position.y -= 0.05; 
+            }
         }
 
         function animate() {
             requestAnimationFrame(animate);
-            updateMobileMovement();
+            updateMobileMovement(); 
             renderer.render(scene, camera);
         }
+
 
     </script>
       
