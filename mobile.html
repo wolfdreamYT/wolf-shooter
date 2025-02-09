@@ -290,36 +290,41 @@
 
         let joystick = document.getElementById("joystick");
         let joystickContainer = document.getElementById("joystick-container");
-        let touchControls = { forward: false, backward: false, left: false, right: false, jump: false };
+        let joystickActive = false;
+        let joystickStartX = 0;
+        let joystickStartY = 0;
+        let joystickMoveX = 0;
+        let joystickMoveY = 0;
 
         joystickContainer.addEventListener("touchstart", (event) => {
-            let startX = event.touches[0].clientX;
-            let startY = event.touches[0].clientY;
-
-            function moveJoystick(e) {
-                let deltaX = e.touches[0].clientX - startX;
-                let deltaY = e.touches[0].clientY - startY;
-
-                joystick.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-
-                let threshold = 20; 
-                touchControls.forward = deltaY < -threshold;
-                touchControls.backward = deltaY > threshold;
-                touchControls.left = deltaX < -threshold;
-                touchControls.right = deltaX > threshold;
-            }
-
-            function endJoystick() {
-                joystick.style.transform = `translate(-50%, -50%)`;
-                touchControls = { forward: false, backward: false, left: false, right: false, jump: false };
-                document.removeEventListener("touchmove", moveJoystick);
-                document.removeEventListener("touchend", endJoystick);
-            }
-
-            document.addEventListener("touchmove", moveJoystick);
-            document.addEventListener("touchend", endJoystick);
+            joystickActive = true;
+            joystickStartX = event.touches[0].clientX;
+            joystickStartY = event.touches[0].clientY;
         });
 
+        document.addEventListener("touchmove", (event) => {
+            if (!joystickActive) return;
+
+            joystickMoveX = event.touches[0].clientX - joystickStartX;
+            joystickMoveY = event.touches[0].clientY - joystickStartY;
+
+            let distance = Math.sqrt(joystickMoveX * joystickMoveX + joystickMoveY * joystickMoveY);
+            let maxDistance = 40; 
+            if (distance > maxDistance) {
+                let angle = Math.atan2(joystickMoveY, joystickMoveX);
+                joystickMoveX = Math.cos(angle) * maxDistance;
+                joystickMoveY = Math.sin(angle) * maxDistance;
+            }
+
+            joystick.style.transform = `translate(${joystickMoveX}px, ${joystickMoveY}px)`;
+        });
+
+        document.addEventListener("touchend", () => {
+            joystickActive = false;
+            joystick.style.transform = `translate(0px, 0px)`;
+            joystickMoveX = 0;
+            joystickMoveY = 0;
+        });
 
         document.getElementById("btn-shoot").addEventListener("touchstart", () => {
             shoot(); 
@@ -386,6 +391,28 @@
             requestAnimationFrame(animate);
             updateMobileMovement(); 
             renderer.render(scene, camera);
+
+            function updateMobileMovement() {
+                let moveSpeed = 0.1; 
+                let direction = new THREE.Vector3();
+                camera.getWorldDirection(direction);
+                direction.y = 0;
+                direction.normalize();
+
+                let moveX = joystickMoveX / 40; 
+                let moveY = joystickMoveY / 40;
+
+                camera.position.add(direction.clone().multiplyScalar(moveY * moveSpeed));
+                camera.position.add(new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), direction).multiplyScalar(moveX * moveSpeed));
+
+                if (touchControls.jump && camera.position.y <= 2.5) {
+                    camera.position.y += 0.3; 
+                }
+
+                if (camera.position.y > 2) {
+                    camera.position.y -= 0.05;
+                }
+            }
         }
 
 
@@ -1214,6 +1241,27 @@
                         isSprinting = false;
                         sprintCooldown = true;
                         setTimeout(() => sprintCooldown = false, 5000);
+                    }
+                }
+                function updateMobileMovement() {
+                    let moveSpeed = 0.1; 
+                    let direction = new THREE.Vector3();
+                    camera.getWorldDirection(direction);
+                    direction.y = 0;
+                    direction.normalize();
+
+                    let moveX = joystickMoveX / 40; 
+                    let moveY = joystickMoveY / 40;
+
+                    camera.position.add(direction.clone().multiplyScalar(moveY * moveSpeed));
+                    camera.position.add(new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), direction).multiplyScalar(moveX * moveSpeed));
+
+                    if (touchControls.jump && camera.position.y <= 2.5) {
+                        camera.position.y += 0.3; 
+                    }
+
+                    if (camera.position.y > 2) {
+                        camera.position.y -= 0.05;
                     }
                 }
 
