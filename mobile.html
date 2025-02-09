@@ -276,7 +276,7 @@
     </div>
 
     <audio id="main-music">
-        <source src="/assets/sounds/music1.mp3" type="audio/mpeg">
+        <source src="music1.mp3" type="audio/mpeg">
     </audio>
 
     <script>
@@ -394,15 +394,15 @@
         }
     </script>
 
-    <img class="gun" src="/assets/textures/gun1.png">
-    <audio id="jump-sound" src="/assets/sounds/jumping.mp3"></audio>
-    <audio id="walking-sound" src="/assets/sounds/walk.mp3" loop></audio>
-    <audio id="reload-sound" src="/assets/sounds/reload.mp3"></audio>
-    <audio id="shop-click-sound" src="/assets/sounds/click.mp3"></audio>
+    <img class="gun" src="gun1.png">
+    <audio id="jump-sound" src="jumping.mp3"></audio>
+    <audio id="walking-sound" src="walk.mp3" loop></audio>
+    <audio id="reload-sound" src="reload.mp3"></audio>
+    <audio id="shop-click-sound" src="click.mp3"></audio>
     <audio id="purchase-success-sound" src="success.mp3"></audio>
-    <audio id="error-sound" src="/assets/sounds/error.mp3"></audio>
-    <audio id="cocking-sound" src="/assets/sounds/gun-cocking.mp3"></audio>
-    <audio id="gunshot-sound" src="/assets/sounds/gunshot.mp3"></audio>
+    <audio id="error-sound" src="error.mp3"></audio>
+    <audio id="cocking-sound" src="gun-cocking.mp3"></audio>
+    <audio id="gunshot-sound" src="gunshot.mp3"></audio>
     <script>
         function startGame() {
             document.getElementById("startup-menu").style.display = "none";
@@ -792,7 +792,7 @@
 
             const chunkObjects = [];
 
-            const floorTexture = new THREE.TextureLoader().load('/assets/textures/floor.jpg');
+            const floorTexture = new THREE.TextureLoader().load('floor.jpg');
             const floor = new THREE.Mesh(
                 new THREE.PlaneGeometry(chunkSize, chunkSize),
                 new THREE.MeshBasicMaterial({ map: floorTexture })
@@ -803,7 +803,7 @@
             chunkObjects.push(floor);
 
             if (Math.random() < 1 / 1) {
-                const enemyTexture = new THREE.TextureLoader().load('/assets/textures/enemy.jpg');
+                const enemyTexture = new THREE.TextureLoader().load('enemy.jpg');
                 const enemy = new THREE.Mesh(
                     new THREE.BoxGeometry(1, 2, 1),
                     new THREE.MeshBasicMaterial({ map: enemyTexture })
@@ -814,7 +814,7 @@
                 chunkObjects.push(enemy);
             }
 
-            const wallTexture = new THREE.TextureLoader().load('/assets/textures/wall.jpg');
+            const wallTexture = new THREE.TextureLoader().load('wall.jpg');
             const numWalls = Math.floor(Math.random() * 3) + 1; 
 
             for (let i = 0; i < numWalls; i++) {
@@ -838,10 +838,10 @@
             }
 
             const obstacleTextures = [
-                new THREE.TextureLoader().load('/assets/textures/obstacle.jpg'),
-                new THREE.TextureLoader().load('/assets/textures/obstacle1.jpg'),
-                new THREE.TextureLoader().load('/assets/textures/obstacle2.jpg'),
-                new THREE.TextureLoader().load('/assets/textures/obstacle3.jpg')
+                new THREE.TextureLoader().load('obstacle.jpg'),
+                new THREE.TextureLoader().load('obstacle1.jpg'),
+                new THREE.TextureLoader().load('obstacle2.jpg'),
+                new THREE.TextureLoader().load('obstacle3.jpg')
             ];
             const numObstacles = Math.floor(Math.random() * 5) + 1; 
 
@@ -876,7 +876,7 @@
             document.body.appendChild(renderer.domElement);
             document.body.addEventListener('click', () => document.body.requestPointerLock());
 
-            const floorTexture = new THREE.TextureLoader().load('/assets/textures/floor.jpg');
+            const floorTexture = new THREE.TextureLoader().load('floor.jpg');
             const floor = new THREE.Mesh(
                 new THREE.PlaneGeometry(200, 200),
                 new THREE.MeshBasicMaterial({ map: floorTexture })
@@ -884,7 +884,7 @@
             floor.rotation.x = -Math.PI / 2;
             scene.add(floor);
 
-            const wallTexture = new THREE.TextureLoader().load('/assets/textures/wall.jpg');
+            const wallTexture = new THREE.TextureLoader().load('wall.jpg');
             for (let i = 0; i < 50; i++) {
                 const wall = new THREE.Mesh(
                     new THREE.BoxGeometry(5, 10, 5),
@@ -905,10 +905,10 @@
             }
 
             const textures = [
-                new THREE.TextureLoader().load('/assets/textures/obstacle.jpg'),
-                new THREE.TextureLoader().load('/assets/textures/obstacle1.jpg'),
-                new THREE.TextureLoader().load('/assets/textures/obstacle2.jpg'),
-                new THREE.TextureLoader().load('/assets/textures/obstacle3.jpg')
+                new THREE.TextureLoader().load('obstacle.jpg'),
+                new THREE.TextureLoader().load('obstacle1.jpg'),
+                new THREE.TextureLoader().load('obstacle2.jpg'),
+                new THREE.TextureLoader().load('obstacle3.jpg')
             ];
 
             const gridSize = 20; 
@@ -946,7 +946,7 @@
             updateHealthBar();
             animate();
 
-            const enemyTexture = new THREE.TextureLoader().load('/assets/textures/enemy.jpg');
+            const enemyTexture = new THREE.TextureLoader().load('enemy.jpg');
 
             for (let i = 0; i < 30; i++) {
                 let enemy = new THREE.Mesh(
