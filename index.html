@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wolf Shooter - Beta 3.0</title>
+    <title>Wolf Shooter - Beta 3.1</title>
     <link rel="icon" href="favicon.ico?v=1" type="image/x-icon">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"></script>
@@ -39,7 +39,7 @@
         .gun {
             position: absolute;
             left: 41%;
-            bottom: -200px;
+            bottom: -170px;
             transform: translateX(-50%);
             width: 40vw;
             height: auto; 
@@ -214,15 +214,36 @@
         <button class="menu-button2" onclick="toggleBattlePass()">Battle Pass</button>
     </div>
 
-    <img class="gun" src="gun1.png">
-    <audio id="jump-sound" src="jumping.mp3"></audio>
-    <audio id="walking-sound" src="walk.mp3" loop></audio>
-    <audio id="reload-sound" src="reload.mp3"></audio>
-    <audio id="shop-click-sound" src="click.mp3"></audio>
+    <audio id="main-music">
+        <source src="/assets/sounds/music1.mp3" type="audio/mpeg">
+    </audio>
+      
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+          let audio = document.getElementById("main-music");
+          audio.loop = true;
+          audio.play().catch(error => console.log("Autoplay prevented, user interaction required."));
+        });
+    </script>     
+    <script>
+        function respawnPlayer() {
+            playerHealth = 200; 
+            camera.position.copy(spawnPoint); 
+            velocity.set(0, 0, 0); 
+            updateHealthBar();
+            console.log("Player has respawned at spawn point.");
+        }
+    </script>
+
+    <img class="gun" src="/assets/textures/gun1.png">
+    <audio id="jump-sound" src="/assets/sounds/jumping.mp3"></audio>
+    <audio id="walking-sound" src="/assets/sounds/walk.mp3" loop></audio>
+    <audio id="reload-sound" src="/assets/sounds/reload.mp3"></audio>
+    <audio id="shop-click-sound" src="/assets/sounds/click.mp3"></audio>
     <audio id="purchase-success-sound" src="success.mp3"></audio>
-    <audio id="error-sound" src="error.mp3"></audio>
-    <audio id="cocking-sound" src="gun-cocking.mp3"></audio>
-    <audio id="gunshot-sound" src="gunshot.mp3"></audio>
+    <audio id="error-sound" src="/assets/sounds/error.mp3"></audio>
+    <audio id="cocking-sound" src="/assets/sounds/gun-cocking.mp3"></audio>
+    <audio id="gunshot-sound" src="/assets/sounds/gunshot.mp3"></audio>
     <script>
         function startGame() {
             document.getElementById("startup-menu").style.display = "none";
@@ -308,6 +329,46 @@
             8: { ammo: 25, score: 650 },
             9: { ammo: 100, score: 0 },
             10: { ammo: 25, score: 800 },
+            11: { ammo: 120, score: 0 },
+            12: { ammo: 25, score: 950 },
+            13: { ammo: 140, score: 0 },
+            14: { ammo: 25, score: 1000 },
+            15: { ammo: 160, score: 0 },
+            16: { ammo: 25, score: 1150 },
+            17: { ammo: 180, score: 0 },
+            18: { ammo: 25, score: 1200 },
+            19: { ammo: 200, score: 0 },
+            20: { ammo: 25, score: 1350 },
+            21: { ammo: 215, score: 0 },
+            22: { ammo: 25, score: 1400 },
+            23: { ammo: 230, score: 0 },
+            24: { ammo: 25, score: 1500 },
+            25: { ammo: 250, score: 0 },
+            26: { ammo: 25, score: 1650 },
+            27: { ammo: 265, score: 0 },
+            28: { ammo: 25, score: 1850 },
+            29: { ammo: 280, score: 0 },
+            30: { ammo: 25, score: 2000 },
+            31: { ammo: 295, score: 0 },
+            32: { ammo: 25, score: 2050 },
+            33: { ammo: 300, score: 0 },
+            34: { ammo: 25, score: 2150 },
+            35: { ammo: 315, score: 0 },
+            36: { ammo: 25, score: 2300 },
+            37: { ammo: 340, score: 0 },
+            38: { ammo: 25, score: 2450 },
+            39: { ammo: 365, score: 0 },
+            40: { ammo: 25, score: 2650 },
+            41: { ammo: 380, score: 0 },
+            42: { ammo: 25, score: 2800 },
+            43: { ammo: 400, score: 0 },
+            44: { ammo: 25, score: 3000 },
+            45: { ammo: 420, score: 0 },
+            46: { ammo: 25, score: 3200 },
+            47: { ammo: 435, score: 0 },
+            48: { ammo: 25, score: 3400 },
+            49: { ammo: 450, score: 0 },
+            50: { ammo: 25, score: 3500 },
         };
 
         document.addEventListener('keydown', function (event) {
@@ -344,7 +405,7 @@
             updateBattlePassUI();
 
             while (bpProgress >= bpRequiredPoints) {
-                if (bpLevel < 10) {
+                if (bpLevel < 50) {
                     levelUpBattlePass();
                 } else {
                     bpProgress -= bpRequiredPoints;
@@ -358,7 +419,7 @@
         }
 
         function levelUpBattlePass() {
-            if (bpLevel < 10) {
+            if (bpLevel < 50) {
                 bpProgress -= bpRequiredPoints;
                 bpLevel++;
 
@@ -572,7 +633,7 @@
 
             const chunkObjects = [];
 
-            const floorTexture = new THREE.TextureLoader().load('floor.jpg');
+            const floorTexture = new THREE.TextureLoader().load('/assets/textures/floor.jpg');
             const floor = new THREE.Mesh(
                 new THREE.PlaneGeometry(chunkSize, chunkSize),
                 new THREE.MeshBasicMaterial({ map: floorTexture })
@@ -583,7 +644,7 @@
             chunkObjects.push(floor);
 
             if (Math.random() < 1 / 1) {
-                const enemyTexture = new THREE.TextureLoader().load('enemy.jpg');
+                const enemyTexture = new THREE.TextureLoader().load('/assets/textures/enemy.jpg');
                 const enemy = new THREE.Mesh(
                     new THREE.BoxGeometry(1, 2, 1),
                     new THREE.MeshBasicMaterial({ map: enemyTexture })
@@ -594,7 +655,7 @@
                 chunkObjects.push(enemy);
             }
 
-            const wallTexture = new THREE.TextureLoader().load('wall.jpg');
+            const wallTexture = new THREE.TextureLoader().load('/assets/textures/wall.jpg');
             const numWalls = Math.floor(Math.random() * 3) + 1; 
 
             for (let i = 0; i < numWalls; i++) {
@@ -618,10 +679,10 @@
             }
 
             const obstacleTextures = [
-                new THREE.TextureLoader().load('obstacle.jpg'),
-                new THREE.TextureLoader().load('obstacle1.jpg'),
-                new THREE.TextureLoader().load('obstacle2.jpg'),
-                new THREE.TextureLoader().load('obstacle3.jpg')
+                new THREE.TextureLoader().load('/assets/textures/obstacle.jpg'),
+                new THREE.TextureLoader().load('/assets/textures/obstacle1.jpg'),
+                new THREE.TextureLoader().load('/assets/textures/obstacle2.jpg'),
+                new THREE.TextureLoader().load('/assets/textures/obstacle3.jpg')
             ];
             const numObstacles = Math.floor(Math.random() * 5) + 1; 
 
@@ -656,7 +717,7 @@
             document.body.appendChild(renderer.domElement);
             document.body.addEventListener('click', () => document.body.requestPointerLock());
 
-            const floorTexture = new THREE.TextureLoader().load('floor.jpg');
+            const floorTexture = new THREE.TextureLoader().load('/assets/textures/floor.jpg');
             const floor = new THREE.Mesh(
                 new THREE.PlaneGeometry(200, 200),
                 new THREE.MeshBasicMaterial({ map: floorTexture })
@@ -664,7 +725,7 @@
             floor.rotation.x = -Math.PI / 2;
             scene.add(floor);
 
-            const wallTexture = new THREE.TextureLoader().load('wall.jpg');
+            const wallTexture = new THREE.TextureLoader().load('/assets/textures/wall.jpg');
             for (let i = 0; i < 50; i++) {
                 const wall = new THREE.Mesh(
                     new THREE.BoxGeometry(5, 10, 5),
@@ -685,10 +746,10 @@
             }
 
             const textures = [
-                new THREE.TextureLoader().load('obstacle.jpg'),
-                new THREE.TextureLoader().load('obstacle1.jpg'),
-                new THREE.TextureLoader().load('obstacle2.jpg'),
-                new THREE.TextureLoader().load('obstacle3.jpg')
+                new THREE.TextureLoader().load('/assets/textures/obstacle.jpg'),
+                new THREE.TextureLoader().load('/assets/textures/obstacle1.jpg'),
+                new THREE.TextureLoader().load('/assets/textures/obstacle2.jpg'),
+                new THREE.TextureLoader().load('/assets/textures/obstacle3.jpg')
             ];
 
             const gridSize = 20; 
@@ -726,7 +787,7 @@
             updateHealthBar();
             animate();
 
-            const enemyTexture = new THREE.TextureLoader().load('enemy.jpg');
+            const enemyTexture = new THREE.TextureLoader().load('/assets/textures/enemy.jpg');
 
             for (let i = 0; i < 30; i++) {
                 let enemy = new THREE.Mesh(
@@ -1045,7 +1106,7 @@
                         if (!isAdmin) {
                             playerHealth -= 75;
                             updateHealthBar();
-                            if (playerHealth <= 0) location.reload();
+                            if (playerHealth <= 0) respawnPlayer();
                         }
                         scene.remove(bullet);
                         enemyBullets.splice(index, 1);
