@@ -266,14 +266,13 @@
         <button class="menu-button2" onclick="toggleBattlePass()">Battle Pass</button>
     </div>
 
-    <div id="mobile-controls" style="display: none;">
+    <div id="mobile-controls" style="display: block;">
         <div id="joystick-container">
             <div id="joystick"></div>
         </div>
-
         <button class="mobile-btn" id="btn-shoot">🔫</button>
         <button class="mobile-btn" id="btn-jump">⏫</button>
-    </div>
+    </div>    
 
     <audio id="main-music">
         <source src="music1.mp3" type="audio/mpeg">
@@ -290,7 +289,7 @@
 
         let joystick = document.getElementById("joystick");
         let joystickContainer = document.getElementById("joystick-container");
-        let touchControls = { forward: false, backward: false, left: false, right: false };
+        let touchControls = { forward: false, backward: false, left: false, right: false, jump: false };
         let joystickActive = false;
         let joystickStartX = 0, joystickStartY = 0, joystickMoveX = 0, joystickMoveY = 0;
 
@@ -308,7 +307,7 @@
 
             let maxDistance = 50; 
             let distance = Math.sqrt(joystickMoveX ** 2 + joystickMoveY ** 2);
-            
+
             if (distance > maxDistance) {
                 let angle = Math.atan2(joystickMoveY, joystickMoveX);
                 joystickMoveX = Math.cos(angle) * maxDistance;
@@ -317,7 +316,7 @@
 
             joystick.style.transform = `translate(${joystickMoveX}px, ${joystickMoveY}px)`;
 
-            let threshold = 10;
+            let threshold = 10; 
             touchControls.forward = joystickMoveY < -threshold;
             touchControls.backward = joystickMoveY > threshold;
             touchControls.left = joystickMoveX < -threshold;
@@ -329,13 +328,20 @@
             joystick.style.transform = `translate(0px, 0px)`;
             joystickMoveX = 0;
             joystickMoveY = 0;
-            touchControls = { forward: false, backward: false, left: false, right: false };
+            touchControls = { forward: false, backward: false, left: false, right: false, jump: false };
         });
 
-
-        document.getElementById("btn-shoot").addEventListener("touchstart", () => {
-            shoot(); 
+        document.getElementById("btn-jump").addEventListener("touchstart", () => {
+            if (!touchControls.jump) {
+                touchControls.jump = true;
+                setTimeout(() => {
+                    touchControls.jump = false;
+                }, 300); 
+            }
         });
+
+        document.getElementById("btn-shoot").addEventListener("touchstart", shoot);
+
 
         document.getElementById("btn-jump").addEventListener("touchstart", () => {
             if (!touchControls.jump) {
