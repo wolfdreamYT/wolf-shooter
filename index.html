@@ -16,6 +16,7 @@
             left: 50%;
             width: 10px;
             height: 10px;
+            background-color: brown;
             border-radius: 50%;
             transform: translate(-50%, -50%);
         }
@@ -38,7 +39,7 @@
         .gun {
             position: absolute;
             left: 41%;
-            bottom: -150px;
+            bottom: -170px;
             transform: translateX(-50%);
             width: 40vw;
             height: auto; 
@@ -225,7 +226,27 @@
     <script>
         function startGame() {
             document.getElementById("startup-menu").style.display = "none";
+            isPaused = false;
+            isGameStarted = true;
             lockCursor();
+        }
+
+        document.addEventListener("keydown", function(event) {
+            if (event.key === "Escape") {
+                togglePause();
+            }
+        });
+
+        function togglePause() {
+            if (isPaused) {
+                document.getElementById("startup-menu").style.display = "none";
+                isPaused = false;
+                lockCursor();
+            } else {
+                document.getElementById("startup-menu").style.display = "block";
+                isPaused = true;
+                unlockCursor();
+            }
         }
     </script>
     <script>
@@ -485,6 +506,9 @@
         let gravity = -0.005;
         let isGrounded = false;
 
+        let isPaused = true; 
+        let isGameStarted = false; 
+
         let walkSpeed = 0.20; 
         let sprintSpeed = 0.30; 
         let isSprinting = false;
@@ -493,11 +517,11 @@
 
         let enemies = [];
         let enemyBullets = [];
-        let enemyCooldown = 3000, lastShot = 0;
+        let enemyCooldown = 10000, lastShot = 0;
         let spawnPoint = new THREE.Vector3(0, 2, 0);
         let playerHealth = 200;
         let enemySpeed = 0.03; 
-        let detectionRange = 200; 
+        let detectionRange = 50; 
         let stopRange = 2;
         let ammo = 15;
         let enemyAlive = enemies.length > 0;
@@ -534,6 +558,95 @@
                 startReload();
             }
         });
+
+        const chunkSize = 32;
+        const loadedChunks = new Map();
+
+        function getChunkKey(x, z) {
+            return `${Math.floor(x / chunkSize)},${Math.floor(z / chunkSize)}`;
+        }
+
+        function generateChunk(x, z) {
+            const key = getChunkKey(x, z);
+            if (loadedChunks.has(key)) return; 
+
+            const chunkObjects = [];
+
+            const floorTexture = new THREE.TextureLoader().load('floor.jpg');
+            const floor = new THREE.Mesh(
+                new THREE.PlaneGeometry(chunkSize, chunkSize),
+                new THREE.MeshBasicMaterial({ map: floorTexture })
+            );
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.set(x + chunkSize / 2, 0, z + chunkSize / 2);
+            scene.add(floor);
+            chunkObjects.push(floor);
+
+            if (Math.random() < 1 / 1) {
+                const enemyTexture = new THREE.TextureLoader().load('enemy.jpg');
+                const enemy = new THREE.Mesh(
+                    new THREE.BoxGeometry(1, 2, 1),
+                    new THREE.MeshBasicMaterial({ map: enemyTexture })
+                );
+                enemy.position.set(x + Math.random() * chunkSize, 1, z + Math.random() * chunkSize);
+                scene.add(enemy);
+                enemies.push(enemy);
+                chunkObjects.push(enemy);
+            }
+
+            const wallTexture = new THREE.TextureLoader().load('wall.jpg');
+            const numWalls = Math.floor(Math.random() * 3) + 1; 
+
+            for (let i = 0; i < numWalls; i++) {
+                const wall = new THREE.Mesh(
+                    new THREE.BoxGeometry(5, 10, 5), 
+                    new THREE.MeshBasicMaterial({ map: wallTexture })
+                );
+
+                let wx, wz, isOverlapping;
+                do {
+                    wx = x + Math.random() * chunkSize;
+                    wz = z + Math.random() * chunkSize;
+
+                    isOverlapping = obstacles.some(ob => ob.position.distanceTo(new THREE.Vector3(wx, 5, wz)) < 7);
+                } while (isOverlapping);
+
+                wall.position.set(wx, 5, wz);
+                scene.add(wall);
+                obstacles.push(wall);
+                chunkObjects.push(wall);
+            }
+
+            const obstacleTextures = [
+                new THREE.TextureLoader().load('obstacle.jpg'),
+                new THREE.TextureLoader().load('obstacle1.jpg'),
+                new THREE.TextureLoader().load('obstacle2.jpg'),
+                new THREE.TextureLoader().load('obstacle3.jpg')
+            ];
+            const numObstacles = Math.floor(Math.random() * 5) + 1; 
+
+            for (let i = 0; i < numObstacles; i++) {
+                const obstacle = new THREE.Mesh(
+                    new THREE.BoxGeometry(3, 3, 3), 
+                    new THREE.MeshBasicMaterial({ map: obstacleTextures[Math.floor(Math.random() * obstacleTextures.length)] })
+                );
+
+                let ox, oz, isOverlapping;
+                do {
+                    ox = x + Math.random() * chunkSize;
+                    oz = z + Math.random() * chunkSize;
+
+                    isOverlapping = obstacles.some(ob => ob.position.distanceTo(new THREE.Vector3(ox, 1.5, oz)) < 5);
+                } while (isOverlapping);
+
+                obstacle.position.set(ox, 1.5, oz); 
+                scene.add(obstacle);
+                obstacles.push(obstacle);
+                chunkObjects.push(obstacle);
+            }
+
+            loadedChunks.set(key, chunkObjects);
+        }
 
         function init() {
             scene = new THREE.Scene();
@@ -613,7 +726,6 @@
             updateHealthBar();
             animate();
 
-            // Enemy texture
             const enemyTexture = new THREE.TextureLoader().load('enemy.jpg');
 
             for (let i = 0; i < 30; i++) {
@@ -724,8 +836,6 @@
             }
         }
 
-
-
         function startReload() {
             isReloading = true;
             console.log("Reloading... Please wait 5 seconds.");
@@ -781,23 +891,14 @@
             });
         }
 
-        function checkCollisions(position, obstacles) {
-        if (!(position instanceof THREE.Vector3)) {
-            console.error("checkCollisions: position is not a THREE.Vector3", position);
-            return false; 
-        }
-
-        for (const obstacle of obstacles) {
-            if (obstacle.position && obstacle.position instanceof THREE.Vector3) {
-                if (position.distanceTo(obstacle.position) < 2) {
-                    console.log("Collision detected with:", obstacle.position);
+        function checkCollisions(position) {
+            for (const obj of [...obstacles, ...enemies]) {
+                if (obj.position.distanceTo(position) < 2) {
                     return true;
                 }
             }
+            return false;
         }
-        return false;
-    }
-
 
         function animate() {
             requestAnimationFrame(animate);
@@ -809,6 +910,16 @@
             updateEnemies();
 
             enemyShoot();
+
+            const playerChunkKey = getChunkKey(camera.position.x, camera.position.z);
+            const [chunkX, chunkZ] = playerChunkKey.split(',').map(Number);
+
+            for (let dx = -1; dx <= 1; dx++) {
+                for (let dz = -1; dz <= 1; dz++) {
+                    generateChunk((chunkX + dx) * chunkSize, (chunkZ + dz) * chunkSize);
+                }
+            }
+
             renderer.render(scene, camera);
 
             console.log(`Player Position: ${camera.position.x}, ${camera.position.y}, ${camera.position.z}`);
@@ -850,25 +961,15 @@
                         let directionToPlayer = new THREE.Vector3().subVectors(camera.position, enemy.position).normalize();
                         let nextEnemyPosition = enemy.position.clone().add(directionToPlayer.multiplyScalar(enemySpeed));
 
-                        if (!checkCollisions(nextEnemyPosition, obstacles)) {
+                        const enemyChunkKey = getChunkKey(enemy.position.x, enemy.position.z);
+                        const playerChunkKey = getChunkKey(camera.position.x, camera.position.z);
+
+                        if (enemyChunkKey === playerChunkKey && !checkCollisions(nextEnemyPosition)) {
                             enemy.position.copy(nextEnemyPosition);
-                        } else {
-                            console.log(`Enemy ${index} stopped by obstacle at`, enemy.position);
-
-                            let alternativeDirection = new THREE.Vector3(-directionToPlayer.z, 0, directionToPlayer.x);
-                            let alternativePosition = enemy.position.clone().add(alternativeDirection.multiplyScalar(enemySpeed));
-
-                            if (!checkCollisions(alternativePosition, obstacles)) {
-                                enemy.position.copy(alternativePosition);
-                                console.log(`Enemy ${index} moved around obstacle.`);
-                            } else {
-                                console.log(`Enemy ${index} is stuck and stopped.`);
-                            }
                         }
                     }
                 });
             }
-
 
             function updatePlayerMovement() {
                 let moveSpeed = isSprinting ? sprintSpeed : walkSpeed;
@@ -944,7 +1045,6 @@
                         if (!isAdmin) {
                             playerHealth -= 75;
                             updateHealthBar();
-                            createBloodSplatter(camera.position.x, camera.position.z);
                             if (playerHealth <= 0) location.reload();
                         }
                         scene.remove(bullet);
@@ -954,25 +1054,6 @@
                         enemyBullets.splice(index, 1);
                     }
                 });
-            }
-
-            function createBloodSplatter(x, z) {
-                const bloodTexture = new THREE.TextureLoader().load('blood.png');
-                
-                const blood = new THREE.Mesh(
-                    new THREE.PlaneGeometry(2, 2), 
-                    new THREE.MeshBasicMaterial({
-                        map: bloodTexture,
-                        opacity: 1
-                    })
-                );
-
-                blood.rotation.x = -Math.PI / 2; 
-                blood.position.set(x, 0.01, z);
-
-                scene.add(blood);
-
-                console.log("Blood added at:", x, z);
             }
 
             if (controls.jump && isGrounded) velocity.y = 0.2;
@@ -1036,7 +1117,7 @@
                     updateHealthBar();
 
                     if (playerHealth <= 0) {
-                        location.reload();
+                        respawnPlayer();
                     }
                 }
                 scene.remove(bullet);
@@ -1047,6 +1128,15 @@
                 enemyBullets.splice(index, 1);
             }
         });
+
+        function respawnPlayer() {
+            playerHealth = 200; 
+            camera.position.copy(spawnPoint); 
+            velocity.set(0, 0, 0); 
+            updateHealthBar();
+            console.log("Player has respawned at spawn point.");
+        }
+
 
         enemies.forEach((enemy, index) => {
             let playerDistance = enemy.position.distanceTo(camera.position);
