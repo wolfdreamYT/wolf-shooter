@@ -371,29 +371,6 @@
             }
         }, false);
 
-        function updateMobileMovement() {
-            let moveSpeed = 0.2; 
-            let jumpSpeed = 0.5; 
-
-            let direction = new THREE.Vector3();
-            camera.getWorldDirection(direction);
-            direction.y = 0;
-            direction.normalize();
-
-            if (touchControls.forward) camera.position.add(direction.clone().multiplyScalar(moveSpeed));
-            if (touchControls.backward) camera.position.add(direction.clone().multiplyScalar(-moveSpeed));
-            if (touchControls.left) camera.position.add(new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), direction).multiplyScalar(-moveSpeed));
-            if (touchControls.right) camera.position.add(new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), direction).multiplyScalar(moveSpeed));
-
-            if (touchControls.jump && camera.position.y <= 2.5) {
-                camera.position.y += jumpSpeed; 
-            }
-
-            if (camera.position.y > 2) {
-                camera.position.y -= 0.05; 
-            }
-        }
-
         function animate() {
             requestAnimationFrame(animate);
             updateMobileMovement(); 
@@ -1018,52 +995,6 @@
 
         }
 
-        function onKeyDown(event) {
-            if (event.key === 'w') controls.forward = true;
-            if (event.key === 's') controls.backward = true;
-            if (event.key === 'd') controls.left = true;
-            if (event.key === 'a') controls.right = true;
-            if (event.key === ' ') controls.jump = true;
-            if (event.key === 'Shift') controls.sneak = true;
-
-            if (event.key === 'w' && event.ctrlKey && !sprintCooldown) {
-                isSprinting = true;
-                sprintTime = 0; 
-            }
-            if (!isMoving) {
-                walkingSound.play();
-                isMoving = true;
-            }
-
-            if (event.key === ' ') {
-                controls.jump = true;
-                if (!isJumping) {
-                    jumpSound.currentTime = 0;
-                    jumpSound.play();
-                    isJumping = true;
-                }
-            }
-        }
-
-        function onKeyUp(event) {
-            if (event.key === 'w') {
-                controls.forward = false;
-                isSprinting = false;
-            }
-            if (event.key === 's') controls.backward = false;
-            if (event.key === 'd') controls.left = false;
-            if (event.key === 'a') controls.right = false;
-            if (event.key === ' ') controls.jump = false;
-            if (event.key === 'Shift') controls.sneak = false; 
-
-            if (!controls.w && !controls.s && !controls.a && !controls.d) {
-                walkingSound.pause();
-                walkingSound.currentTime = 0;
-                isMoving = false;
-            }
-        }
-
-
         function lookAround(event) {
             if (document.pointerLockElement === document.body) {
                 const euler = new THREE.Euler(0, 0, 0, 'YXZ');
@@ -1237,55 +1168,6 @@
                         }
                     }
                 });
-            }
-
-            function updatePlayerMovement() {
-                let moveSpeed = isSprinting ? sprintSpeed : walkSpeed;
-
-                if (isSprinting) {
-                    sprintTime += 1 / 60;
-                    if (sprintTime >= 10) {
-                        isSprinting = false;
-                        sprintCooldown = true;
-                        setTimeout(() => sprintCooldown = false, 5000);
-                    }
-                }
-                function updateMobileMovement() {
-                    let moveSpeed = 0.1; 
-                    let direction = new THREE.Vector3();
-                    camera.getWorldDirection(direction);
-                    direction.y = 0;
-                    direction.normalize();
-
-                    let moveX = joystickMoveX / 40; 
-                    let moveY = joystickMoveY / 40;
-
-                    camera.position.add(direction.clone().multiplyScalar(moveY * moveSpeed));
-                    camera.position.add(new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), direction).multiplyScalar(moveX * moveSpeed));
-
-                    if (touchControls.jump && camera.position.y <= 2.5) {
-                        camera.position.y += 0.3; 
-                    }
-
-                    if (camera.position.y > 2) {
-                        camera.position.y -= 0.05;
-                    }
-                }
-
-                let direction = new THREE.Vector3();
-                camera.getWorldDirection(direction);
-                direction.y = 0;
-                direction.normalize();
-
-                const nextPosition = camera.position.clone();
-                if (controls.forward) nextPosition.add(direction.clone().multiplyScalar(moveSpeed));
-                if (controls.backward) nextPosition.add(direction.clone().multiplyScalar(-moveSpeed));
-                if (controls.left) nextPosition.add(new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), direction).multiplyScalar(-moveSpeed));
-                if (controls.right) nextPosition.add(new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), direction).multiplyScalar(moveSpeed));
-
-                if (!checkCollisions({ position: nextPosition }, obstacles)) {
-                    camera.position.copy(nextPosition);
-                }
             }
 
             function updateBullets() {
