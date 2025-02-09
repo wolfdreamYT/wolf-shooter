@@ -134,6 +134,7 @@
             background: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
             pointer-events: auto;
+            touch-action: none;
         }
 
         #joystick {
@@ -149,13 +150,14 @@
 
         .mobile-btn {
             position: absolute;
-            width: 70px;
-            height: 70px;
+            width: 80px;
+            height: 80px;
             font-size: 24px;
             background-color: rgba(255, 255, 255, 0.8);
             border: 2px solid black;
             border-radius: 50%;
             pointer-events: auto;
+            touch-action: none;
         }
 
         #btn-shoot {
@@ -268,13 +270,13 @@
         <div id="joystick-container">
             <div id="joystick"></div>
         </div>
-    
+
         <button class="mobile-btn" id="btn-shoot">🔫</button>
         <button class="mobile-btn" id="btn-jump">⏫</button>
     </div>
 
     <audio id="main-music">
-        <source src="music1.mp3" type="audio/mpeg">
+        <source src="/assets/sounds/music1.mp3" type="audio/mpeg">
     </audio>
 
     <script>
@@ -300,10 +302,10 @@
 
                 joystick.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
 
-                touchControls.forward = deltaY < -20;
-                touchControls.backward = deltaY > 20;
-                touchControls.left = deltaX < -20;
-                touchControls.right = deltaX > 20;
+                touchControls.forward = deltaY < -30;
+                touchControls.backward = deltaY > 30;
+                touchControls.left = deltaX < -30;
+                touchControls.right = deltaX > 30;
             }
 
             function endJoystick() {
@@ -326,20 +328,6 @@
             setTimeout(() => touchControls.jump = false, 200);
         });
 
-        function updateMobileMovement() {
-            if (touchControls.forward) camera.position.z -= 0.1;
-            if (touchControls.backward) camera.position.z += 0.1;
-            if (touchControls.left) camera.position.x -= 0.1;
-            if (touchControls.right) camera.position.x += 0.1;
-            if (touchControls.jump) camera.position.y += 0.2;
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            updateMobileMovement();
-            renderer.render(scene, camera);
-        }
-
         let lastTouchX, lastTouchY;
         document.addEventListener("touchstart", (event) => {
             lastTouchX = event.touches[0].clientX;
@@ -353,7 +341,7 @@
                 lastTouchX = event.touches[0].clientX;
                 lastTouchY = event.touches[0].clientY;
 
-                const sensitivity = 0.002;
+                const sensitivity = 0.005; 
                 const euler = new THREE.Euler(0, 0, 0, 'YXZ');
                 euler.setFromQuaternion(camera.quaternion);
 
@@ -365,11 +353,28 @@
             }
         }, false);
 
-        document.addEventListener("touchstart", (event) => {
-            if (event.touches.length === 1) {
-                shoot();
-            }
-        });
+        function updateMobileMovement() {
+            let moveSpeed = 0.2; 
+
+            let direction = new THREE.Vector3();
+            camera.getWorldDirection(direction);
+            direction.y = 0;
+            direction.normalize();
+
+            if (touchControls.forward) camera.position.add(direction.clone().multiplyScalar(moveSpeed));
+            if (touchControls.backward) camera.position.add(direction.clone().multiplyScalar(-moveSpeed));
+            if (touchControls.left) camera.position.add(new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), direction).multiplyScalar(-moveSpeed));
+            if (touchControls.right) camera.position.add(new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), direction).multiplyScalar(moveSpeed));
+
+            if (touchControls.jump) camera.position.y += 0.3;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            updateMobileMovement();
+            renderer.render(scene, camera);
+        }
+
     </script>
       
     <script>
@@ -389,15 +394,15 @@
         }
     </script>
 
-    <img class="gun" src="gun1.png">
-    <audio id="jump-sound" src="jumping.mp3"></audio>
-    <audio id="walking-sound" src="walk.mp3" loop></audio>
-    <audio id="reload-sound" src="reload.mp3"></audio>
-    <audio id="shop-click-sound" src="click.mp3"></audio>
+    <img class="gun" src="/assets/textures/gun1.png">
+    <audio id="jump-sound" src="/assets/sounds/jumping.mp3"></audio>
+    <audio id="walking-sound" src="/assets/sounds/walk.mp3" loop></audio>
+    <audio id="reload-sound" src="/assets/sounds/reload.mp3"></audio>
+    <audio id="shop-click-sound" src="/assets/sounds/click.mp3"></audio>
     <audio id="purchase-success-sound" src="success.mp3"></audio>
-    <audio id="error-sound" src="error.mp3"></audio>
-    <audio id="cocking-sound" src="gun-cocking.mp3"></audio>
-    <audio id="gunshot-sound" src="gunshot.mp3"></audio>
+    <audio id="error-sound" src="/assets/sounds/error.mp3"></audio>
+    <audio id="cocking-sound" src="/assets/sounds/gun-cocking.mp3"></audio>
+    <audio id="gunshot-sound" src="/assets/sounds/gunshot.mp3"></audio>
     <script>
         function startGame() {
             document.getElementById("startup-menu").style.display = "none";
@@ -787,7 +792,7 @@
 
             const chunkObjects = [];
 
-            const floorTexture = new THREE.TextureLoader().load('floor.jpg');
+            const floorTexture = new THREE.TextureLoader().load('/assets/textures/floor.jpg');
             const floor = new THREE.Mesh(
                 new THREE.PlaneGeometry(chunkSize, chunkSize),
                 new THREE.MeshBasicMaterial({ map: floorTexture })
@@ -798,7 +803,7 @@
             chunkObjects.push(floor);
 
             if (Math.random() < 1 / 1) {
-                const enemyTexture = new THREE.TextureLoader().load('enemy.jpg');
+                const enemyTexture = new THREE.TextureLoader().load('/assets/textures/enemy.jpg');
                 const enemy = new THREE.Mesh(
                     new THREE.BoxGeometry(1, 2, 1),
                     new THREE.MeshBasicMaterial({ map: enemyTexture })
@@ -809,7 +814,7 @@
                 chunkObjects.push(enemy);
             }
 
-            const wallTexture = new THREE.TextureLoader().load('wall.jpg');
+            const wallTexture = new THREE.TextureLoader().load('/assets/textures/wall.jpg');
             const numWalls = Math.floor(Math.random() * 3) + 1; 
 
             for (let i = 0; i < numWalls; i++) {
@@ -833,10 +838,10 @@
             }
 
             const obstacleTextures = [
-                new THREE.TextureLoader().load('obstacle.jpg'),
-                new THREE.TextureLoader().load('obstacle1.jpg'),
-                new THREE.TextureLoader().load('obstacle2.jpg'),
-                new THREE.TextureLoader().load('obstacle3.jpg')
+                new THREE.TextureLoader().load('/assets/textures/obstacle.jpg'),
+                new THREE.TextureLoader().load('/assets/textures/obstacle1.jpg'),
+                new THREE.TextureLoader().load('/assets/textures/obstacle2.jpg'),
+                new THREE.TextureLoader().load('/assets/textures/obstacle3.jpg')
             ];
             const numObstacles = Math.floor(Math.random() * 5) + 1; 
 
@@ -871,7 +876,7 @@
             document.body.appendChild(renderer.domElement);
             document.body.addEventListener('click', () => document.body.requestPointerLock());
 
-            const floorTexture = new THREE.TextureLoader().load('floor.jpg');
+            const floorTexture = new THREE.TextureLoader().load('/assets/textures/floor.jpg');
             const floor = new THREE.Mesh(
                 new THREE.PlaneGeometry(200, 200),
                 new THREE.MeshBasicMaterial({ map: floorTexture })
@@ -879,7 +884,7 @@
             floor.rotation.x = -Math.PI / 2;
             scene.add(floor);
 
-            const wallTexture = new THREE.TextureLoader().load('wall.jpg');
+            const wallTexture = new THREE.TextureLoader().load('/assets/textures/wall.jpg');
             for (let i = 0; i < 50; i++) {
                 const wall = new THREE.Mesh(
                     new THREE.BoxGeometry(5, 10, 5),
@@ -900,10 +905,10 @@
             }
 
             const textures = [
-                new THREE.TextureLoader().load('obstacle.jpg'),
-                new THREE.TextureLoader().load('obstacle1.jpg'),
-                new THREE.TextureLoader().load('obstacle2.jpg'),
-                new THREE.TextureLoader().load('obstacle3.jpg')
+                new THREE.TextureLoader().load('/assets/textures/obstacle.jpg'),
+                new THREE.TextureLoader().load('/assets/textures/obstacle1.jpg'),
+                new THREE.TextureLoader().load('/assets/textures/obstacle2.jpg'),
+                new THREE.TextureLoader().load('/assets/textures/obstacle3.jpg')
             ];
 
             const gridSize = 20; 
@@ -941,7 +946,7 @@
             updateHealthBar();
             animate();
 
-            const enemyTexture = new THREE.TextureLoader().load('enemy.jpg');
+            const enemyTexture = new THREE.TextureLoader().load('/assets/textures/enemy.jpg');
 
             for (let i = 0; i < 30; i++) {
                 let enemy = new THREE.Mesh(
