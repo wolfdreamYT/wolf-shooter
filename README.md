@@ -26,6 +26,8 @@ Hello everyone, please feel free to play the game i created. This game has multi
   - Fully functioning terrian generation
   - Infinite map generation
   - infinite enemy generation (as you generate more chunks)
+  - Fully functioning Chunk loading system (to use less RAM and CPU)
+  - Dynamic lighting
 
 # How To Use:
 
@@ -48,6 +50,8 @@ Now, to open shop, press B and a UI should appear. This UI will have 2 buttons: 
 Now, to open the BattlePass, you must click P on your keyboard. This will open a nice BattlePass UI with your level, and progress to the next level. Each level gives better rewards, and comes with both ammo and points for purchasing items in shop and killing more enemies. The BattlePass contains 10 predefined levels with rewards getting better as you go on, and after reaching level 10, your level stops increasing and every 1000 points (10 kills) after will give you 10 more ammo.
 
 This map is a never ending map. There are chunks of 32x32 and you can go anywhere you want. Infinite amount of enemies will spawn, about 1-2 per chunk, and walls, floor, and obstacles will generate for you to hide behind, but be careful! Enemies can now go through walls and obstacles, since the gamemode is on HardCore now! But, you can use the boxes and walls as cover for bullets, as bullets cannot travel through solid objects! Have fun, and try to survive as much as possible!
+
+TIP: For version 4.0, i decided to add chunk loading system where when you move away from a chunk, it despawns, and generates new ones according to the player position. This makes your gameplay smoother and easier to use, especially for low-end users with not that much RAM & CPU.
 
 Thankyou for supporting this project, and this is going to get better as we progress. Please, if you havent laready, give us a good star rating. If you do not like or have not been satisfied from our work, please let us know as this can help us improve the game better.
 
