@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wolf Shooter - Beta 3.1</title>
+    <title>Wolf Shooter - Beta 4.0</title>
     <link rel="icon" href="favicon.ico?v=1" type="image/x-icon">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"></script>
@@ -39,7 +39,7 @@
         .gun {
             position: absolute;
             left: 41%;
-            bottom: -200px;
+            bottom: -170px;
             transform: translateX(-50%);
             width: 40vw;
             height: auto; 
@@ -130,7 +130,7 @@
         position: absolute; top: 50px; left: 20px; 
         font-size: 20px; color: white; background: rgba(0, 0, 0, 0.5);
         padding: 5px; border-radius: 5px;">
-        Ammo: 3
+        Ammo: 15
     </div>
     <div id="score-display" style="
         position: absolute; top: 80px; left: 20px; 
@@ -234,6 +234,32 @@
             console.log("Player has respawned at spawn point.");
         }
     </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            enableGameMode();
+        });
+        
+        function enableGameMode() {
+            console.log("🕹️ Game Mode Enabled!");
+        
+            document.getElementById("startup-menu").style.display = "none";
+        
+            if (document.body.requestFullscreen) {
+                document.body.requestFullscreen();
+            }
+        
+            document.body.style.overflow = "hidden";
+            document.body.style.cursor = "none"; 
+        
+            requestAnimationFrame(loop);
+        }
+        
+        function loop() {
+            requestAnimationFrame(loop);
+        }
+    </script>
+        
 
     <img class="gun" src="gun1.png">
     <audio id="jump-sound" src="jumping.mp3"></audio>
@@ -582,9 +608,9 @@
         let spawnPoint = new THREE.Vector3(0, 2, 0);
         let playerHealth = 200;
         let enemySpeed = 0.03; 
-        let detectionRange = 50; 
+        let detectionRange = 75; 
         let stopRange = 2;
-        let ammo = 15;
+        let ammo = 30;
         let enemyAlive = enemies.length > 0;
         let score = 0;
         let magazineSize = 15; 
@@ -596,11 +622,13 @@
         let isMoving = false;
         let isJumping = false;
         let playerBulletSpeed = 1.0; 
-        let enemyBulletSpeed = 0.5; 
+        let enemyBulletSpeed = 1.0; 
+        let lastPlayerChunkKey = null; 
 
 
         const obstacles = [];
         const lookSpeed = 0.002;
+        const renderDistance = 3; 
 
         function updateHealthBar() {
             const healthFill = document.getElementById('health-fill');
@@ -629,46 +657,33 @@
 
         function generateChunk(x, z) {
             const key = getChunkKey(x, z);
-            if (loadedChunks.has(key)) return; 
+
+            if (loadedChunks.has(key)) {
+                loadedChunks.get(key).forEach(obj => obj.visible = true);
+                return;
+            }
 
             const chunkObjects = [];
 
             const floorTexture = new THREE.TextureLoader().load('floor.jpg');
-            const floor = new THREE.Mesh(
-                new THREE.PlaneGeometry(chunkSize, chunkSize),
-                new THREE.MeshBasicMaterial({ map: floorTexture })
-            );
+            const floorMaterial = new THREE.MeshStandardMaterial({ map: floorTexture });
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(chunkSize, chunkSize), floorMaterial);
             floor.rotation.x = -Math.PI / 2;
             floor.position.set(x + chunkSize / 2, 0, z + chunkSize / 2);
             scene.add(floor);
             chunkObjects.push(floor);
 
-            if (Math.random() < 1 / 1) {
-                const enemyTexture = new THREE.TextureLoader().load('enemy.jpg');
-                const enemy = new THREE.Mesh(
-                    new THREE.BoxGeometry(1, 2, 1),
-                    new THREE.MeshBasicMaterial({ map: enemyTexture })
-                );
-                enemy.position.set(x + Math.random() * chunkSize, 1, z + Math.random() * chunkSize);
-                scene.add(enemy);
-                enemies.push(enemy);
-                chunkObjects.push(enemy);
-            }
-
             const wallTexture = new THREE.TextureLoader().load('wall.jpg');
             const numWalls = Math.floor(Math.random() * 3) + 1; 
 
             for (let i = 0; i < numWalls; i++) {
-                const wall = new THREE.Mesh(
-                    new THREE.BoxGeometry(5, 10, 5), 
-                    new THREE.MeshBasicMaterial({ map: wallTexture })
-                );
-
+                const wallMaterial = new THREE.MeshStandardMaterial({ map: wallTexture });
+                const wall = new THREE.Mesh(new THREE.BoxGeometry(5, 10, 5), wallMaterial);
+                
                 let wx, wz, isOverlapping;
                 do {
                     wx = x + Math.random() * chunkSize;
                     wz = z + Math.random() * chunkSize;
-
                     isOverlapping = obstacles.some(ob => ob.position.distanceTo(new THREE.Vector3(wx, 5, wz)) < 7);
                 } while (isOverlapping);
 
@@ -678,31 +693,39 @@
                 chunkObjects.push(wall);
             }
 
+            if (Math.random() < 0.5) {
+                const enemyTexture = new THREE.TextureLoader().load('enemy.jpg');
+                const enemyMaterial = new THREE.MeshStandardMaterial({ map: enemyTexture });
+                const enemy = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 1), enemyMaterial);
+                enemy.position.set(x + Math.random() * chunkSize, 1, z + Math.random() * chunkSize);
+                scene.add(enemy);
+                enemies.push(enemy);
+                chunkObjects.push(enemy);
+            }
+
             const obstacleTextures = [
                 new THREE.TextureLoader().load('obstacle.jpg'),
                 new THREE.TextureLoader().load('obstacle1.jpg'),
                 new THREE.TextureLoader().load('obstacle2.jpg'),
                 new THREE.TextureLoader().load('obstacle3.jpg')
             ];
-            const numObstacles = Math.floor(Math.random() * 5) + 1; 
 
+            const numObstacles = Math.floor(Math.random() * 5) + 1;
             for (let i = 0; i < numObstacles; i++) {
-                const obstacle = new THREE.Mesh(
-                    new THREE.BoxGeometry(3, 3, 3), 
-                    new THREE.MeshBasicMaterial({ map: obstacleTextures[Math.floor(Math.random() * obstacleTextures.length)] })
-                );
+                const obstacleMaterial = new THREE.MeshStandardMaterial({
+                    map: obstacleTextures[Math.floor(Math.random() * obstacleTextures.length)]
+                });
 
+                const obstacle = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 3), obstacleMaterial);
                 let ox, oz, isOverlapping;
                 do {
                     ox = x + Math.random() * chunkSize;
                     oz = z + Math.random() * chunkSize;
-
                     isOverlapping = obstacles.some(ob => ob.position.distanceTo(new THREE.Vector3(ox, 1.5, oz)) < 5);
                 } while (isOverlapping);
 
-                obstacle.position.set(ox, 1.5, oz); 
+                obstacle.position.set(ox, 1.5, oz);
                 scene.add(obstacle);
-                obstacles.push(obstacle);
                 chunkObjects.push(obstacle);
             }
 
@@ -716,6 +739,13 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
             document.body.addEventListener('click', () => document.body.requestPointerLock());
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            const sunLight = new THREE.DirectionalLight(0xffffff, 1);
+            sunLight.position.set(50, 50, 50);
+            scene.add(sunLight);
 
             const floorTexture = new THREE.TextureLoader().load('floor.jpg');
             const floor = new THREE.Mesh(
@@ -969,17 +999,65 @@
             updateBullets();
             updateEnemyBullets();
             updateEnemies();
+            removeDistantChunks();
 
             enemyShoot();
 
-            const playerChunkKey = getChunkKey(camera.position.x, camera.position.z);
-            const [chunkX, chunkZ] = playerChunkKey.split(',').map(Number);
+            function updateChunkVisibility() {
+                const playerChunkKey = getChunkKey(camera.position.x, camera.position.z);
+                const [playerChunkX, playerChunkZ] = playerChunkKey.split(',').map(Number);
 
-            for (let dx = -1; dx <= 1; dx++) {
-                for (let dz = -1; dz <= 1; dz++) {
+                loadedChunks.forEach((objects, key) => {
+                    const [chunkX, chunkZ] = key.split(',').map(Number);
+                    const distance = Math.max(Math.abs(chunkX - playerChunkX), Math.abs(chunkZ - playerChunkZ));
+
+                    let opacity = 1.0;
+                    if (distance > renderDistance) {
+                        opacity = Math.max(0, 1 - ((distance - renderDistance) / 3)); 
+                    }
+
+                    objects.forEach(obj => {
+                        if (obj.material && obj.material.opacity !== undefined) {
+                            obj.material.transparent = true;
+                            obj.material.opacity = opacity;
+                        }
+                    });
+                });
+            }
+
+            function removeDistantChunks() {
+                if (typeof renderDistance === "undefined") return;
+
+                const playerChunkKey = getChunkKey(camera.position.x, camera.position.z);
+                const [playerChunkX, playerChunkZ] = playerChunkKey.split(',').map(Number);
+
+                loadedChunks.forEach((objects, key) => {
+                    const [chunkX, chunkZ] = key.split(',').map(Number);
+                    const distance = Math.max(Math.abs(chunkX - playerChunkX), Math.abs(chunkZ - playerChunkZ));
+
+                    if (distance > renderDistance + 2) { 
+                        objects.forEach(obj => obj.visible = false);
+                    } else {
+                        objects.forEach(obj => obj.visible = true);
+                    }
+                });
+            }
+
+            const newChunkKey = getChunkKey(camera.position.x, camera.position.z);
+
+            if (newChunkKey !== lastPlayerChunkKey) {
+                removeDistantChunks(); 
+                lastPlayerChunkKey = newChunkKey; 
+            }
+
+            const [chunkX, chunkZ] = newChunkKey.split(',').map(Number); 
+
+            for (let dx = -renderDistance; dx <= renderDistance; dx++) {
+                for (let dz = -renderDistance; dz <= renderDistance; dz++) {
                     generateChunk((chunkX + dx) * chunkSize, (chunkZ + dz) * chunkSize);
                 }
             }
+
 
             renderer.render(scene, camera);
 
