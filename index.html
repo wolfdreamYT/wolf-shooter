@@ -156,7 +156,7 @@
         display: none;
         width: 300px;
         text-align: center;
-        z-index: 20; /* Ensures it's on top */
+        z-index: 20; 
     ">
         <h2>Shop</h2>
         <button class="shop-button" onclick="buyItem('ammo')">Ammo (+5) - 100 Points</button><br><br>
@@ -343,7 +343,8 @@
         let battlePassOpen = false;
         let bpLevel = 1;
         let bpProgress = 0;
-        const bpRequiredPoints = 1000; 
+        const bpRequiredPoints = 1000;
+
         const bpRewards = {
             1: { ammo: 0, score: 0 },
             2: { ammo: 25, score: 100 },
@@ -411,7 +412,7 @@
                 lockCursor();
                 enableControls();
             } else {
-                hideAllUI(); 
+                hideAllUI();
                 battlePassMenu.style.display = "block";
                 unlockCursor();
                 disableControls();
@@ -431,41 +432,50 @@
             updateBattlePassUI();
 
             while (bpProgress >= bpRequiredPoints) {
-                if (bpLevel < 50) {
-                    levelUpBattlePass();
-                } else {
-                    bpProgress -= bpRequiredPoints;
-                    ammo += 10;
-                    playSound("purchase-success-sound");
-                    updateAmmoDisplay();
-                    console.log(`🎉 Max Level! Received +10 Ammo`);
-                }
+                levelUpBattlePass();
                 updateBattlePassUI();
             }
         }
 
         function levelUpBattlePass() {
-            if (bpLevel < 50) {
-                bpProgress -= bpRequiredPoints;
-                bpLevel++;
+            bpProgress -= bpRequiredPoints;
+            bpLevel++;
 
-                let reward = bpRewards[bpLevel];
-                ammo += reward.ammo;
-                score += reward.score;
-                playSound("purchase-success-sound");
-
-                updateAmmoDisplay();
-                updateScoreDisplay();
-                console.log(`🎉 Leveled up to ${bpLevel}! Rewards: Ammo +${reward.ammo}, Score +${reward.score}`);
+            let reward;
+            if (bpLevel <= 50) {
+                reward = bpRewards[bpLevel];
+            } else {
+                reward = { ammo: 25, score: 500 };
             }
+
+            ammo += reward.ammo;
+            score += reward.score;
+            playSound("purchase-success-sound");
+
+            updateAmmoDisplay();
+            updateScoreDisplay();
+            console.log(`🎉 Leveled up to ${bpLevel}! Rewards: Ammo +${reward.ammo}, Score +${reward.score}`);
         }
 
         function updateBattlePassUI() {
             document.getElementById('bp-level').innerText = bpLevel;
             document.getElementById('bp-progress').innerText = bpProgress;
-            
+
             let progressPercentage = (bpProgress / bpRequiredPoints) * 100;
             document.getElementById('bp-progress-bar').style.width = progressPercentage + "%";
+        }
+
+        function updateAmmoDisplay() {
+            document.getElementById('ammo-display').innerText = `Ammo: ${ammo}`;
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('score-display').innerText = `Score: ${score}`;
+        }
+
+        function playSound(soundName) {
+            let audio = new Audio(`sounds/${soundName}.mp3`);
+            audio.play();
         }
     </script>
     <script>
